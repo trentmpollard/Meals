@@ -2,321 +2,1036 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Kitchen Tracker</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#2a7a52">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Kitchen">
-<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meals">
+<meta name="theme-color" content="#059669">
+<title>Meals</title>
 <style>
-:root{color-scheme:light;}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;}
-.header{background:white;padding:16px 20px 12px;border-bottom:1px solid #e8e7e2;position:sticky;top:0;z-index:50;}
-.header h1{font-size:21px;font-weight:700;letter-spacing:-0.3px;}
-.header-sub{font-size:13px;color:#888;margin-top:2px;}
-.header-stats{display:flex;gap:12px;margin-top:10px;}
-.hstat{text-align:center;}
-.hstat-num{font-size:18px;font-weight:700;}
-.hstat-num.green{color:#2a7a52;}.hstat-num.red{color:#d44;}.hstat-num.blue{color:#2563eb;}
-.hstat-label{font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.4px;}
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:white;border-top:1px solid #e8e7e2;display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom,0);}
-.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 10px;background:none;border:none;cursor:pointer;font-size:10px;color:#aaa;gap:4px;font-family:inherit;transition:color 0.15s;}
-.nav-btn.active{color:#2a7a52;}
-.nav-btn svg{width:22px;height:22px;stroke-width:1.8;}
-.nav-badge{position:absolute;top:6px;background:#e44;color:white;border-radius:10px;font-size:9px;font-weight:700;padding:1px 5px;min-width:16px;text-align:center;}
-.nav-icon-wrap{position:relative;}
-.content{flex:1;padding:14px 14px 90px;}
-.tab-view{display:none;}.tab-view.active{display:block;}
-.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:#999;margin:16px 0 8px 2px;}
-.items-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.item-card{background:white;border-radius:12px;padding:11px 12px 11px 10px;display:flex;align-items:center;gap:9px;border:1.5px solid #e8e7e2;cursor:pointer;position:relative;min-height:52px;}
-.item-card.out{background:#fff8f8;border-color:#f5c0c0;}
-.item-dot{width:18px;height:18px;border-radius:50%;border:2px solid #d0d0cc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.12s;}
-.item-card.in .item-dot{background:#2a7a52;border-color:#2a7a52;}
-.item-card.in .item-dot::after{content:'\2713';color:white;font-size:10px;font-weight:800;}
-.item-name{font-size:13px;font-weight:500;flex:1;line-height:1.3;}
-.item-card.out .item-name{color:#b33;}
-.item-del{position:absolute;top:4px;right:4px;width:18px;height:18px;background:#f0eeea;border:none;border-radius:50%;cursor:pointer;font-size:11px;color:#aaa;display:none;align-items:center;justify-content:center;}
-.item-card:hover .item-del{display:flex;}
-.add-bar{display:flex;gap:8px;margin-bottom:4px;}
-.add-bar input{flex:1;padding:11px 14px;border:1.5px solid #e0dfd9;border-radius:11px;font-size:15px;background:white;font-family:inherit;outline:none;}
-.add-bar input:focus{border-color:#2a7a52;}
-.add-bar select{padding:11px 10px;border:1.5px solid #e0dfd9;border-radius:11px;font-size:14px;background:white;font-family:inherit;outline:none;color:#444;}
-.btn-green{padding:11px 16px;background:#2a7a52;color:white;border:none;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
-.shop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.shop-title{font-size:17px;font-weight:700;}
-.btn-copy{padding:8px 14px;background:#2a7a52;color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.shop-item{background:white;border-radius:11px;padding:13px 14px;margin-bottom:7px;display:flex;align-items:center;gap:11px;border:1px solid #e8e7e2;transition:opacity 0.15s;}
-.shop-item.auto{border-left:3px solid #e44;}.shop-item.manual{border-left:3px solid #f0a030;}.shop-item.checked{opacity:0.45;}
-.shop-item-info{flex:1;}
-.shop-item-name{font-size:15px;font-weight:500;}
-.shop-item.checked .shop-item-name{text-decoration:line-through;}
-.shop-item-tag{font-size:11px;color:#999;margin-top:1px;}
-.shop-check{width:22px;height:22px;border-radius:50%;border:2px solid #ccc;cursor:pointer;flex-shrink:0;background:white;display:flex;align-items:center;justify-content:center;transition:all 0.12s;}
-.shop-item.checked .shop-check{background:#2a7a52;border-color:#2a7a52;}
-.shop-item.checked .shop-check::after{content:'\2713';color:white;font-size:11px;font-weight:800;}
-.shop-del{background:none;border:none;color:#ddd;cursor:pointer;padding:4px;font-size:17px;line-height:1;}
-.add-shop-row{display:flex;gap:8px;margin-top:10px;}
-.add-shop-row input{flex:1;padding:11px 14px;border:1.5px solid #e0dfd9;border-radius:11px;font-size:15px;background:white;font-family:inherit;outline:none;}
-.empty-shop{text-align:center;padding:32px 20px;color:#999;font-size:15px;}
-.empty-shop-icon{font-size:44px;margin-bottom:10px;}
-.meal-card{background:white;border-radius:14px;padding:14px 15px;margin-bottom:10px;border:1px solid #e8e7e2;}
-.meal-row{display:flex;justify-content:space-between;align-items:center;gap:8px;}
-.meal-name{font-size:16px;font-weight:600;flex:1;}
-.meal-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
-.badge-green{background:#e6f5ec;color:#2a7a52;}.badge-red{background:#fdf0f0;color:#c44;}.badge-gray{background:#f0f0ec;color:#888;}
-.meal-ingredients{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
-.ing-pill{padding:3px 9px;border-radius:20px;font-size:12px;font-weight:500;}
-.ing-have{background:#e6f5ec;color:#2a7a52;}.ing-miss{background:#fdf0f0;color:#c44;}
-.meal-actions{display:flex;gap:7px;margin-top:11px;}
-.btn-add-shop{flex:1;padding:9px;border-radius:9px;border:1px solid #e0dfd9;background:white;font-size:13px;font-weight:500;cursor:pointer;color:#444;font-family:inherit;}
-.btn-del-meal{width:34px;height:34px;background:none;border:1px solid #ede;border-radius:9px;cursor:pointer;color:#ccc;font-size:14px;display:flex;align-items:center;justify-content:center;}
-.add-meal-form{background:white;border-radius:14px;padding:15px;margin-bottom:14px;border:1.5px solid #2a7a52;display:none;}
-.add-meal-form.visible{display:block;}
-.form-label{font-size:12px;font-weight:600;color:#666;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.3px;}
-.form-input{width:100%;padding:11px 14px;border:1.5px solid #e0dfd9;border-radius:11px;font-size:15px;margin-bottom:12px;font-family:inherit;outline:none;}
-.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
-.tag-pill{background:#e6f5ec;color:#2a7a52;padding:4px 9px;border-radius:20px;font-size:13px;display:flex;align-items:center;gap:4px;}
-.tag-rm{background:none;border:none;color:#2a7a52;cursor:pointer;font-size:14px;padding:0;line-height:1;}
-.tag-add-row{display:flex;gap:7px;margin-bottom:14px;}
-.tag-add-row input{flex:1;padding:10px 13px;border:1.5px solid #e0dfd9;border-radius:11px;font-size:14px;font-family:inherit;outline:none;}
-.tag-add-row button{padding:10px 13px;background:#f0f0ec;border:1px solid #e0dfd9;border-radius:11px;font-size:13px;cursor:pointer;color:#555;font-family:inherit;white-space:nowrap;}
-.form-btns{display:flex;gap:8px;}
-.btn-save{flex:1;padding:12px;background:#2a7a52;color:white;border:none;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
-.btn-cancel{padding:12px 16px;background:#f0f0ec;color:#666;border:none;border-radius:11px;font-size:15px;cursor:pointer;font-family:inherit;}
-.tonight-hero{background:#2a7a52;border-radius:16px;padding:18px 20px;margin-bottom:14px;color:white;}
-.tonight-hero h2{font-size:19px;font-weight:700;margin-bottom:3px;}
-.tonight-hero p{font-size:13px;opacity:0.82;}
-.suggest-card{background:white;border-radius:14px;padding:14px 15px;margin-bottom:9px;border:1px solid #e8e7e2;display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.suggest-info{flex:1;}.suggest-name{font-size:16px;font-weight:600;}.suggest-sub{font-size:13px;color:#888;margin-top:3px;}
-.btn-cook{padding:9px 15px;background:#2a7a52;color:white;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0;}
-.almost-card{background:white;border-radius:14px;padding:14px 15px;margin-bottom:9px;border:1px solid #f5d9b0;}
-.almost-top{display:flex;justify-content:space-between;align-items:center;}
-.almost-name{font-size:15px;font-weight:600;color:#a06010;}.almost-missing{font-size:13px;color:#c44;margin-top:5px;}
-.btn-add-missing{padding:7px 12px;background:#fff4e6;color:#a06010;border:1px solid #f5d9b0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;}
-.empty-tonight{text-align:center;padding:40px 20px;color:#999;}.empty-tonight-icon{font-size:52px;margin-bottom:12px;}
-.cook-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:300;display:none;align-items:flex-end;justify-content:center;}
-.cook-modal-overlay.open{display:flex;}
-.cook-modal{background:white;border-radius:22px 22px 0 0;padding:20px 18px 32px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
-.cook-modal-handle{width:40px;height:4px;background:#e0dfd9;border-radius:4px;margin:0 auto 18px;}
-.cook-modal-title{font-size:20px;font-weight:700;margin-bottom:4px;}
-.cook-modal-sub{font-size:13px;color:#888;margin-bottom:18px;}
-.cook-ing-list{list-style:none;margin-bottom:20px;}
-.cook-ing-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #f0efeb;cursor:pointer;}
-.cook-ing-item:last-child{border-bottom:none;}
-.cook-ing-cb{width:22px;height:22px;border-radius:6px;border:2px solid #d0d0cc;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.12s;}
-.cook-ing-item.used .cook-ing-cb{background:#2a7a52;border-color:#2a7a52;}
-.cook-ing-item.used .cook-ing-cb::after{content:'\2713';color:white;font-size:12px;font-weight:800;}
-.cook-ing-item.used .cook-ing-name{text-decoration:line-through;color:#aaa;}
-.cook-ing-name{font-size:16px;flex:1;}.cook-ing-status{font-size:12px;padding:3px 9px;border-radius:20px;}
-.cook-btn-done{width:100%;padding:15px;background:#2a7a52;color:white;border:none;border-radius:13px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;}
-.cook-btn-close{width:100%;padding:13px;background:#f0f0ec;color:#666;border:none;border-radius:13px;font-size:15px;cursor:pointer;font-family:inherit;}
-.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(30,30,30,0.92);color:white;padding:10px 20px;border-radius:22px;font-size:14px;opacity:0;transition:opacity 0.2s;z-index:200;pointer-events:none;white-space:nowrap;}
-.toast.show{opacity:1;}
-.top-btn-row{display:flex;gap:8px;margin-bottom:14px;}
-.btn-outline{flex:1;padding:10px;background:white;color:#2a7a52;border:1.5px solid #2a7a52;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;}
-.filter-row{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;scrollbar-width:none;}
-.filter-row::-webkit-scrollbar{display:none;}
-.filter-chip{padding:6px 13px;border-radius:20px;border:1px solid #e0dfd9;background:white;font-size:13px;color:#666;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.12s;}
-.filter-chip.active{background:#2a7a52;color:white;border-color:#2a7a52;}
+:root{
+  --green:#059669;--green-lt:#d1fae5;--green-dk:#047857;
+  --amber:#d97706;--amber-lt:#fef3c7;
+  --red:#dc2626;--red-lt:#fee2e2;
+  --g50:#f9fafb;--g100:#f3f4f6;--g200:#e5e7eb;--g300:#d1d5db;
+  --g400:#9ca3af;--g600:#4b5563;--g800:#1f2937;--g900:#111827;
+  --white:#ffffff;--r:12px;--r-sm:8px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+}
+[data-theme="dark"]{
+  --g50:#0f172a;--g100:#1e293b;--g200:#334155;--g300:#475569;
+  --g400:#64748b;--g600:#94a3b8;--g800:#cbd5e1;--g900:#f1f5f9;
+  --white:#1e293b;
+  --green-lt:rgba(5,150,105,0.18);--green-dk:#34d399;
+  --amber-lt:rgba(217,119,6,0.18);--red-lt:rgba(220,38,38,0.2);
+  --sh:0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
+}
+[data-theme="dark"] .cat-fridge{background:rgba(219,234,254,0.12);color:#93c5fd}
+[data-theme="dark"] .cat-freezer{background:rgba(237,233,254,0.12);color:#c4b5fd}
+[data-theme="dark"] .cat-pantry-tag{background:rgba(254,249,195,0.12);color:#fde047}
+[data-theme="dark"] .cook-banner{color:var(--green-dk)}
+[data-theme="dark"] .meal-card-row:active{background:var(--g100)}
+[data-theme="dark"] .ing-res-item{background:var(--g100)}
+[data-theme="dark"] .ing-res-item:active{background:var(--g200)}
+[data-theme="dark"] .sel-ing{background:var(--g100)}
+[data-theme="dark"] .finput{background:var(--g100);border-color:var(--g200);color:var(--g900)}
+[data-theme="dark"] .search-inp{background:var(--g100);border-color:var(--g200);color:var(--g900)}
+[data-theme="dark"] .cat-opt{background:var(--g100);border-color:var(--g200);color:var(--g600)}
+[data-theme="dark"] .cat-opt.sel.fridge{background:rgba(219,234,254,0.15);border-color:#3b82f6;color:#93c5fd}
+[data-theme="dark"] .cat-opt.sel.freezer{background:rgba(237,233,254,0.15);border-color:#8b5cf6;color:#c4b5fd}
+[data-theme="dark"] .cat-opt.sel.pantry{background:rgba(254,249,195,0.15);border-color:#eab308;color:#fde047}
+[data-theme="dark"] .fchip{background:var(--g100);border-color:var(--g200)}
+[data-theme="dark"] .btn-secondary{background:var(--g200);color:var(--g800)}
+[data-theme="dark"] .eater-avatar{background:rgba(5,150,105,0.25)}
+[data-theme="dark"] .theme-btn{background:var(--g100);color:var(--g600);border-color:var(--g200)}
+[data-theme="dark"] .theme-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--g50);color:var(--g900);overflow:hidden;transition:background .2s,color .2s}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+/* Header */
+header{background:var(--white);border-bottom:1px solid var(--g200);padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));display:flex;align-items:center;gap:10px;box-shadow:var(--sh);z-index:10;flex-shrink:0}
+.logo{width:34px;height:34px;flex-shrink:0}
+.app-title{font-size:20px;font-weight:800;color:var(--g900);letter-spacing:-0.5px}
+.hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.stat-pill{font-size:12px;font-weight:600;padding:3px 9px;border-radius:20px;background:var(--green-lt);color:var(--green-dk)}
+.hdr-btn{width:32px;height:32px;border-radius:8px;border:none;background:var(--g100);color:var(--g600);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.hdr-btn:active{background:var(--g200)}
+
+/* Main */
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:72px}
+.section{display:none}.section.active{display:block}
+
+/* Nav */
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--g200);padding:6px 0;padding-bottom:max(6px,env(safe-area-inset-bottom));display:flex;z-index:10}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;background:none;border:none;cursor:pointer;color:var(--g400);font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.tab svg{width:20px;height:20px}
+.tab.active{color:var(--green)}
+.tab:active{opacity:.7}
+
+/* Cards */
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);margin:8px 14px;overflow:hidden}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:6px;padding:10px 14px 4px;overflow-x:auto;scrollbar-width:none}
+.filter-bar::-webkit-scrollbar{display:none}
+.fchip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--g200);background:var(--white);font-size:13px;font-weight:500;color:var(--g600);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.fchip.active{background:var(--green);color:var(--white);border-color:var(--green)}
+
+/* Section label */
+.slabel{padding:14px 14px 4px;font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.6px}
+
+/* Buttons */
+.btn{padding:9px 16px;border-radius:var(--r-sm);border:none;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn:active{opacity:.8}
+.btn-primary{background:var(--green);color:var(--white)}
+.btn-secondary{background:var(--g100);color:var(--g600)}
+.btn-danger{background:var(--red-lt);color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:13px}
+
+/* Category tags */
+.cat-tag{font-size:10px;padding:2px 6px;border-radius:5px;font-weight:600;flex-shrink:0}
+.cat-fridge{background:#dbeafe;color:#1d4ed8}
+.cat-freezer{background:#ede9fe;color:#6d28d9}
+.cat-pantry-tag{background:#fef9c3;color:#854d0e}
+
+/* Cook screen */
+.cook-banner{margin:10px 14px;padding:11px 13px;background:var(--green-lt);border-radius:var(--r);border-left:3px solid var(--green);font-size:13px;color:var(--green-dk);line-height:1.4}
+.meal-card{background:var(--white);border-radius:var(--r);box-shadow:var(--sh);margin:8px 14px;overflow:hidden}
+.meal-card-row{padding:13px 14px;display:flex;align-items:center;gap:11px;cursor:pointer}
+.meal-card-row:active{background:var(--g50)}
+.r-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.r-dot.ready{background:var(--green)}
+.r-dot.almost{background:var(--amber)}
+.r-dot.not-ready{background:var(--g300)}
+.meal-name{flex:1;font-size:16px;font-weight:600;color:var(--g900)}
+.r-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px}
+.r-badge.ready{background:var(--green-lt);color:var(--green-dk)}
+.r-badge.almost{background:var(--amber-lt);color:var(--amber)}
+.r-badge.not-ready{background:var(--g100);color:var(--g600)}
+.avg-star{font-size:12px;color:var(--g400);display:flex;align-items:center;gap:2px;margin-right:4px}
+.avg-star span{color:#f59e0b}
+
+/* Meal detail */
+.meal-detail{border-top:1px solid var(--g100);padding:12px 14px;background:var(--g50)}
+.meal-detail-btns{display:flex;gap:7px;margin-bottom:10px}
+.ing-list{display:flex;flex-direction:column;gap:5px}
+.ing-row{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--white);border-radius:var(--r-sm);border:1px solid var(--g100)}
+.ing-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.in-s .ing-dot{background:var(--green)}
+.out-s .ing-dot{background:var(--red)}
+.ing-row-name{flex:1;font-size:14px;color:var(--g800)}
+.out-s .ing-row-name{color:var(--g400);text-decoration:line-through}
+.ratings-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.r-chip{display:flex;align-items:center;gap:4px;padding:3px 9px;background:var(--g100);border-radius:20px;font-size:12px}
+.r-chip-name{font-weight:500;color:var(--g800)}
+.r-chip-score{color:var(--green);font-weight:700}
+
+/* Pantry */
+.search-wrap{margin:10px 14px 0;position:relative}
+.search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--g400);font-size:13px;pointer-events:none}
+.search-inp{width:100%;padding:9px 12px 9px 34px;border:1.5px solid var(--g200);border-radius:10px;font-size:15px;background:var(--white);outline:none;font-family:inherit}
+.search-inp:focus{border-color:var(--green)}
+.pantry-item{display:flex;align-items:center;gap:11px;padding:14px;cursor:pointer;border-bottom:none}
+.p-toggle{width:22px;height:22px;border-radius:50%;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.p-toggle.in{border-color:var(--green);background:var(--green-lt);color:var(--green)}
+.p-toggle.out{border-color:var(--g300);background:var(--white);color:transparent}
+.pantry-info{flex:1;min-width:0}
+.pantry-name{font-size:15px;font-weight:500;color:var(--g900)}
+.pantry-item.out-s .pantry-name{color:var(--g400)}
+.meal-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.mtag{font-size:10px;padding:1px 6px;border-radius:5px;background:var(--green-lt);color:var(--green-dk);font-weight:500;white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.del-btn{padding:5px 9px;border-radius:6px;background:var(--red-lt);color:var(--red);border:none;font-size:12px;font-weight:600;cursor:pointer;flex-shrink:0}
+
+/* Shop */
+.shop-item{display:flex;align-items:center;gap:11px;padding:14px;cursor:pointer;border-bottom:none}
+.shop-cb{width:22px;height:22px;border-radius:6px;border:2px solid var(--g300);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:transparent}
+.shop-cb.chk{background:var(--green);border-color:var(--green);color:var(--white)}
+.shop-info{flex:1;min-width:0}
+.shop-name{font-size:15px;font-weight:500;color:var(--g900)}
+.shop-item.chk .shop-name{text-decoration:line-through;color:var(--g400)}
+.shop-sub{font-size:11px;color:var(--g400);margin-top:1px}
+.shop-clear-btn{font-size:12px;color:var(--green);background:none;border:none;font-weight:700;cursor:pointer}
+
+/* Modals */
+.mbdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:flex-end}
+.mbdrop.open{display:flex}
+.modal{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding-bottom:max(16px,env(safe-area-inset-bottom));transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1)}
+.mbdrop.open .modal{transform:translateY(0)}
+.m-handle{width:36px;height:4px;background:var(--g200);border-radius:2px;margin:12px auto 0}
+.m-hdr{display:flex;align-items:center;padding:14px 16px 10px;gap:10px}
+.m-title{font-size:18px;font-weight:700;flex:1}
+.m-close{width:28px;height:28px;border-radius:50%;background:var(--g100);border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--g600)}
+.m-body{padding:0 16px 16px}
+.fg{margin-bottom:14px}
+.flabel{font-size:13px;font-weight:600;color:var(--g600);margin-bottom:5px;display:block}
+.finput{width:100%;padding:11px 13px;border:1.5px solid var(--g200);border-radius:var(--r-sm);font-size:16px;color:var(--g900);background:var(--white);outline:none;font-family:inherit;transition:border-color .15s}
+.finput:focus{border-color:var(--green)}
+.cat-sel{display:flex;gap:7px}
+.cat-opt{flex:1;padding:9px 6px;border-radius:var(--r-sm);border:1.5px solid var(--g200);background:var(--white);font-size:13px;font-weight:500;cursor:pointer;text-align:center;color:var(--g600)}
+.cat-opt.sel.fridge{background:#dbeafe;border-color:#3b82f6;color:#1d4ed8}
+.cat-opt.sel.freezer{background:#ede9fe;border-color:#8b5cf6;color:#6d28d9}
+.cat-opt.sel.pantry{background:#fef9c3;border-color:#eab308;color:#854d0e}
+.sel-ings{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.sel-ing{display:flex;align-items:center;gap:7px;padding:8px 11px;background:var(--g50);border-radius:var(--r-sm);border:1px solid var(--g200)}
+.sel-ing-name{flex:1;font-size:14px;font-weight:500}
+.rm-ing{color:var(--g400);font-size:15px;background:none;border:none;cursor:pointer}
+.ing-res{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.ing-res-item{padding:9px 11px;border-radius:8px;background:var(--g50);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px}
+.ing-res-item:active{background:var(--g100)}
+.ing-res-item.create{color:var(--green);font-weight:600}
+.cook-item{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--g100);cursor:pointer}
+.cook-item:last-child{border-bottom:none}
+.cook-cb{width:24px;height:24px;border-radius:6px;border:2px solid var(--g300);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:transparent}
+.cook-cb.chk{background:var(--green);border-color:var(--green);color:var(--white)}
+.cook-item-info{flex:1}
+.cook-item-name{font-size:15px;font-weight:500}
+.cook-item-sub{font-size:11px;color:var(--g400);margin-top:1px}
+.cook-item-sub.already-out{color:var(--red)}
+.er-block{padding:13px 0;border-bottom:1px solid var(--g100)}
+.er-block:last-child{border-bottom:none}
+.er-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.er-name{font-size:15px;font-weight:600}
+.er-rel{font-size:11px;color:var(--g400)}
+.er-score{font-size:26px;font-weight:800;color:var(--green)}
+.r-slider{width:100%;accent-color:var(--green)}
+.eater-row{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid var(--g100)}
+.eater-row:last-child{border-bottom:none}
+.eater-avatar{width:36px;height:36px;border-radius:50%;background:var(--green-lt);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--green-dk);flex-shrink:0}
+.eater-info{flex:1}
+.eater-name-txt{font-size:15px;font-weight:600}
+.eater-rel-txt{font-size:12px;color:var(--g400)}
+
+/* FAB */
+.fab{position:fixed;bottom:78px;right:16px;width:50px;height:50px;border-radius:50%;background:var(--green);color:var(--white);border:none;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(5,150,105,.4);cursor:pointer;z-index:50}
+.fab:active{transform:scale(.92)}
+
+/* Toast */
+.toast{position:fixed;bottom:85px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--g900);color:var(--white);padding:9px 17px;border-radius:20px;font-size:14px;font-weight:500;opacity:0;transition:all .25s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Theme toggle buttons */
+.theme-sel{display:flex;gap:8px}
+.theme-btn{flex:1;padding:10px 8px;border-radius:var(--r-sm);border:1.5px solid var(--g200);background:var(--white);font-size:13px;font-weight:600;cursor:pointer;text-align:center;color:var(--g600)}
+.theme-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+/* Settings section headings */
+.set-section{font-size:12px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+/* Empty state */
+.empty{padding:48px 24px;text-align:center;color:var(--g400)}
+.empty-icon{font-size:44px;margin-bottom:10px}
+.empty-title{font-size:16px;font-weight:600;color:var(--g600);margin-bottom:5px}
+.empty-text{font-size:14px;line-height:1.5}
 </style>
 </head>
 <body>
-<div class="header">
-  <div><h1>&#127968; Kitchen Tracker</h1><div class="header-sub" id="header-sub">Loading...</div></div>
-  <div class="header-stats">
-    <div class="hstat"><div class="hstat-num green" id="stat-in">0</div><div class="hstat-label">In Stock</div></div>
-    <div class="hstat"><div class="hstat-num red" id="stat-out">0</div><div class="hstat-label">Need</div></div>
-    <div class="hstat"><div class="hstat-num blue" id="stat-cook">0</div><div class="hstat-label">Can Cook</div></div>
+<div id="app">
+
+<header>
+  <svg class="logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+    <rect width="48" height="48" rx="12" fill="#059669"/>
+    <path d="M9 38 L9 10 L15 10 L24 26 L33 10 L39 10 L39 38 L33 38 L33 18 L25 32 L23 32 L15 18 L15 38 Z" fill="white"/>
+  </svg>
+  <span class="app-title">Meals</span>
+  <div class="hdr-right">
+    <span class="stat-pill" id="ready-pill">0 ready</span>
+    <button class="hdr-btn" onclick="openFamilyModal()" title="Family">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </button>
+    <button class="hdr-btn" onclick="openSettingsModal()" title="Settings">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </div>
-</div>
-<div class="content">
-  <div class="tab-view active" id="tab-pantry">
-    <div class="filter-row" id="cat-filters"></div>
-    <div class="add-bar">
-      <input type="text" id="new-item-name" placeholder="Add item..."/>
-      <select id="new-item-cat">
-        <option value="Produce">&#129382; Produce</option><option value="Dairy">&#129472; Dairy</option>
-        <option value="Meat">&#129385; Meat</option><option value="Pantry" selected>&#129403; Pantry</option>
-        <option value="Frozen">&#10052;&#65039; Frozen</option><option value="Beverages">&#129380; Drinks</option>
-        <option value="Snacks">&#127850; Snacks</option><option value="Other">&#128230; Other</option>
-      </select>
-      <button class="btn-green" onclick="addPantryItem()">Add</button>
+</header>
+
+<main>
+  <div id="s-cook" class="section active">
+    <div class="cook-banner">🍽️ Tap a meal to see ingredients — <strong>green = ready to cook tonight.</strong></div>
+    <div id="cook-list"></div>
+  </div>
+
+  <div id="s-meals" class="section">
+    <div id="meals-list"></div>
+  </div>
+
+  <div id="s-pantry" class="section">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-inp" id="pantry-search" placeholder="Search ingredients…" oninput="renderPantry()">
+    </div>
+    <div class="filter-bar" id="pantry-filters">
+      <button class="fchip active" data-cat="all" onclick="setPantryFilter('all')">All</button>
+      <button class="fchip" data-cat="fridge" onclick="setPantryFilter('fridge')">🧊 Fridge</button>
+      <button class="fchip" data-cat="freezer" onclick="setPantryFilter('freezer')">❄️ Freezer</button>
+      <button class="fchip" data-cat="pantry" onclick="setPantryFilter('pantry')">🥫 Pantry</button>
     </div>
     <div id="pantry-list"></div>
   </div>
-  <div class="tab-view" id="tab-shop">
-    <div class="shop-header"><div class="shop-title">Shopping List</div><button class="btn-copy" onclick="copyShopList()">&#128203; Copy List</button></div>
-    <div id="shop-auto-section"></div><div id="shop-manual-section"></div>
-    <div class="add-shop-row"><input type="text" id="new-shop-item" placeholder="Add item manually..."/><button class="btn-green" onclick="addShopItem()">Add</button></div>
+
+  <div id="s-shop" class="section">
+    <div id="shop-list"></div>
   </div>
-  <div class="tab-view" id="tab-meals">
-    <div class="top-btn-row"><button class="btn-outline" onclick="toggleAddMealForm()">+ Add Meal</button></div>
-    <div class="add-meal-form" id="add-meal-form">
-      <div class="form-label">Meal Name</div>
-      <input class="form-input" id="meal-name-input" type="text" placeholder="e.g. Chicken Tacos"/>
-      <div class="form-label">Ingredients</div>
-      <div class="tag-row" id="meal-tags"></div>
-      <div class="tag-add-row">
-        <input type="text" id="ing-input" placeholder="Add ingredient..." list="pantry-suggestions"/>
-        <datalist id="pantry-suggestions"></datalist>
-        <button onclick="addIngredientTag()">+ Add</button>
-      </div>
-      <div class="form-btns"><button class="btn-save" onclick="saveMeal()">Save Meal</button><button class="btn-cancel" onclick="toggleAddMealForm()">Cancel</button></div>
-    </div>
-    <div id="meals-list"></div>
-  </div>
-  <div class="tab-view" id="tab-tonight">
-    <div class="tonight-hero"><h2>What's for dinner?</h2><p id="tonight-sub">Based on what you have right now</p></div>
-    <div id="tonight-list"></div>
-  </div>
-</div>
-<nav class="bottom-nav">
-  <button class="nav-btn active" onclick="switchTab('pantry',this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18"/></svg>Pantry
+</main>
+
+<nav>
+  <button class="tab active" data-s="cook" onclick="showSection('cook')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>Cook
   </button>
-  <button class="nav-btn" onclick="switchTab('shop',this)">
-    <div class="nav-icon-wrap">
-      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.4 7h12.8M7 13l-1-5M10 21a1 1 0 100-2 1 1 0 000 2zm7 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
-      <span class="nav-badge" id="shop-badge" style="display:none">0</span>
-    </div>Shop
+  <button class="tab" data-s="meals" onclick="showSection('meals')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Meals
   </button>
-  <button class="nav-btn" onclick="switchTab('meals',this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Meals
+  <button class="tab" data-s="pantry" onclick="showSection('pantry')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Pantry
   </button>
-  <button class="nav-btn" onclick="switchTab('tonight',this)">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>Tonight
+  <button class="tab" data-s="shop" onclick="showSection('shop')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 001.95-1.57l1.65-8.42H6"/></svg>Shop
   </button>
 </nav>
+
+<button class="fab" id="fab" onclick="handleFab()">+</button>
+</div>
+
 <div class="toast" id="toast"></div>
-<div class="cook-modal-overlay" id="cook-modal-overlay" onclick="closeCookModal(event)">
-  <div class="cook-modal">
-    <div class="cook-modal-handle"></div>
-    <div class="cook-modal-title" id="cook-modal-title"></div>
-    <div class="cook-modal-sub" id="cook-modal-sub"></div>
-    <ul class="cook-ing-list" id="cook-ing-list"></ul>
-    <button class="cook-btn-done" id="cook-btn-done"></button>
-    <button class="cook-btn-close" onclick="document.getElementById('cook-modal-overlay').classList.remove('open')">Close</button>
+
+<!-- MODAL: Add/Edit Meal -->
+<div class="mbdrop" id="meal-modal" onclick="backdropClose(event,'meal-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title" id="meal-modal-title">New Meal</span>
+    <button class="m-close" onclick="closeModal('meal-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <input type="hidden" id="meal-edit-id">
+    <div class="fg">
+      <label class="flabel">Meal Name</label>
+      <input class="finput" id="meal-name-inp" placeholder="e.g. Chicken Stir Fry">
+    </div>
+    <div class="fg">
+      <label class="flabel">Ingredients</label>
+      <div id="sel-ings" class="sel-ings"></div>
+      <input class="finput" id="ing-search-inp" placeholder="Search or add ingredient…" oninput="renderIngSearch()" style="margin-bottom:6px">
+      <div id="ing-search-res" class="ing-res"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveMeal()" style="width:100%">Save Meal</button>
   </div>
 </div>
+</div>
+
+<!-- MODAL: Add Ingredient -->
+<div class="mbdrop" id="ing-modal" onclick="backdropClose(event,'ing-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title">New Ingredient</span>
+    <button class="m-close" onclick="closeModal('ing-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <div class="fg">
+      <label class="flabel">Name</label>
+      <input class="finput" id="new-ing-name" placeholder="e.g. Whole Milk">
+    </div>
+    <div class="fg">
+      <label class="flabel">Where is it stored?</label>
+      <div class="cat-sel">
+        <button class="cat-opt fridge" data-cat="fridge" onclick="selCat('fridge')">🧊 Fridge</button>
+        <button class="cat-opt freezer" data-cat="freezer" onclick="selCat('freezer')">❄️ Freezer</button>
+        <button class="cat-opt pantry" data-cat="pantry" onclick="selCat('pantry')">🥫 Pantry</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="saveIngredient()" style="width:100%">Add Ingredient</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Cook It -->
+<div class="mbdrop" id="cook-modal" onclick="backdropClose(event,'cook-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title" id="cook-modal-title">Cook It!</span>
+    <button class="m-close" onclick="closeModal('cook-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <p style="font-size:13px;color:var(--g600);margin-bottom:12px;line-height:1.5">Check the ingredients you will <strong>use up</strong>. They will be removed from your pantry and added to your shopping list.</p>
+    <div id="cook-ing-list"></div>
+    <button class="btn btn-primary" id="cook-done-btn" onclick="finishCooking()" style="width:100%;margin-top:14px">Done Cooking</button>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Rate Meal -->
+<div class="mbdrop" id="rate-modal" onclick="backdropClose(event,'rate-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title" id="rate-modal-title">Rate this Meal</span>
+    <button class="m-close" onclick="closeModal('rate-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <div id="rate-eaters"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-secondary" onclick="closeModal('rate-modal')" style="flex:1">Skip</button>
+      <button class="btn btn-primary" onclick="saveRatings()" style="flex:2">Save Ratings</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Family -->
+<div class="mbdrop" id="family-modal" onclick="backdropClose(event,'family-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title">Family</span>
+    <button class="m-close" onclick="closeModal('family-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <div id="family-list"></div>
+    <div style="height:1px;background:var(--g100);margin:12px 0"></div>
+    <div class="fg">
+      <label class="flabel">Add Family Member</label>
+      <input class="finput" id="eater-name-inp" placeholder="Name (e.g. Sarah)" style="margin-bottom:8px">
+      <input class="finput" id="eater-rel-inp" placeholder="Relation (e.g. Wife, Kid, Myself)">
+    </div>
+    <button class="btn btn-primary" onclick="saveEater()" style="width:100%">Add Member</button>
+    <div id="family-ratings"></div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Settings -->
+<div class="mbdrop" id="settings-modal" onclick="backdropClose(event,'settings-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title">Settings</span>
+    <button class="m-close" onclick="closeModal('settings-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <div class="fg">
+      <div class="set-section">Appearance</div>
+      <div class="theme-sel">
+        <button class="theme-btn" id="theme-light" onclick="setTheme('light')">☀️ Light</button>
+        <button class="theme-btn" id="theme-dark" onclick="setTheme('dark')">🌙 Dark</button>
+      </div>
+    </div>
+    <div style="height:1px;background:var(--g100);margin:8px 0 16px"></div>
+    <div class="fg">
+      <div class="set-section">Data</div>
+      <button class="btn btn-danger" onclick="confirmClearData()" style="width:100%">Clear All App Data</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL: Add Shop Extra -->
+<div class="mbdrop" id="shop-extra-modal" onclick="backdropClose(event,'shop-extra-modal')">
+<div class="modal">
+  <div class="m-handle"></div>
+  <div class="m-hdr">
+    <span class="m-title">Add to Shopping List</span>
+    <button class="m-close" onclick="closeModal('shop-extra-modal')">✕</button>
+  </div>
+  <div class="m-body">
+    <div class="fg">
+      <label class="flabel">Item</label>
+      <input class="finput" id="shop-extra-inp" placeholder="e.g. Paper towels">
+    </div>
+    <button class="btn btn-primary" onclick="saveShopExtra()" style="width:100%">Add Item</button>
+  </div>
+</div>
+</div>
+
 <script>
-const CATS=['Produce','Dairy','Meat','Pantry','Frozen','Beverages','Snacks','Other'];
-const CE={Produce:'&#129382;',Dairy:'&#129472;',Meat:'&#129385;',Pantry:'&#129403;',Frozen:'&#10052;&#65039;',Beverages:'&#129380;',Snacks:'&#127850;',Other:'&#128230;'};
-const DP=[
-  {id:'p1',name:'Onions',category:'Produce',inStock:true},{id:'p2',name:'Garlic',category:'Produce',inStock:true},
-  {id:'p3',name:'Tomatoes',category:'Produce',inStock:false},{id:'p4',name:'Lettuce',category:'Produce',inStock:false},
-  {id:'p5',name:'Bananas',category:'Produce',inStock:true},{id:'p6',name:'Apples',category:'Produce',inStock:true},
-  {id:'p7',name:'Potatoes',category:'Produce',inStock:false},{id:'p8',name:'Carrots',category:'Produce',inStock:true},
-  {id:'p9',name:'Milk',category:'Dairy',inStock:true},{id:'p10',name:'Eggs',category:'Dairy',inStock:true},
-  {id:'p11',name:'Butter',category:'Dairy',inStock:true},{id:'p12',name:'Shredded Cheese',category:'Dairy',inStock:false},
-  {id:'p13',name:'Yogurt',category:'Dairy',inStock:false},{id:'p14',name:'Sour Cream',category:'Dairy',inStock:true},
-  {id:'p15',name:'Chicken Breasts',category:'Meat',inStock:true},{id:'p16',name:'Ground Beef',category:'Meat',inStock:false},
-  {id:'p17',name:'Bacon',category:'Meat',inStock:true},{id:'p18',name:'Sausage',category:'Meat',inStock:false},
-  {id:'p19',name:'Rice',category:'Pantry',inStock:true},{id:'p20',name:'Pasta',category:'Pantry',inStock:true},
-  {id:'p21',name:'Bread',category:'Pantry',inStock:true},{id:'p22',name:'Olive Oil',category:'Pantry',inStock:true},
-  {id:'p23',name:'Canned Tomatoes',category:'Pantry',inStock:false},{id:'p24',name:'Chicken Broth',category:'Pantry',inStock:true},
-  {id:'p25',name:'Peanut Butter',category:'Pantry',inStock:true},{id:'p26',name:'Oats',category:'Pantry',inStock:true},
-  {id:'p27',name:'Flour',category:'Pantry',inStock:false},{id:'p28',name:'Sugar',category:'Pantry',inStock:true},
-  {id:'p29',name:'Frozen Vegetables',category:'Frozen',inStock:true},{id:'p30',name:'Frozen Pizza',category:'Frozen',inStock:true},
-  {id:'p31',name:'Chicken Nuggets',category:'Frozen',inStock:false},{id:'p32',name:'Coffee',category:'Beverages',inStock:true},
-  {id:'p33',name:'Orange Juice',category:'Beverages',inStock:false},{id:'p34',name:'Tortilla Chips',category:'Snacks',inStock:true},
-  {id:'p35',name:'Crackers',category:'Snacks',inStock:false}
-];
-const DM=[
-  {id:'m1',name:'Spaghetti Bolognese',ingredients:['Ground Beef','Pasta','Canned Tomatoes','Onions','Garlic']},
-  {id:'m2',name:'Chicken Stir Fry',ingredients:['Chicken Breasts','Rice','Frozen Vegetables','Garlic']},
-  {id:'m3',name:'Scrambled Eggs & Toast',ingredients:['Eggs','Butter','Bread']},
-  {id:'m4',name:'Beef Tacos',ingredients:['Ground Beef','Shredded Cheese','Tomatoes','Lettuce','Sour Cream','Tortilla Chips']},
-  {id:'m5',name:'Chicken Soup',ingredients:['Chicken Breasts','Chicken Broth','Carrots','Onions','Garlic']},
-  {id:'m6',name:'Pasta with Butter & Cheese',ingredients:['Pasta','Butter','Shredded Cheese']},
-  {id:'m7',name:'Bacon & Eggs',ingredients:['Bacon','Eggs','Bread']},
-  {id:'m8',name:'Oatmeal',ingredients:['Oats','Milk','Bananas']},
-  {id:'m9',name:'Grilled Chicken & Rice',ingredients:['Chicken Breasts','Rice','Frozen Vegetables']},
-  {id:'m10',name:'BLT Sandwich',ingredients:['Bacon','Lettuce','Tomatoes','Bread','Sour Cream']}
-];
-let S={pantry:[],meals:[],shopExtra:[],shopChecked:[],catFilter:'All',newIngredients:[]};
-function load(){try{const s=JSON.parse(localStorage.getItem('kt_v2')||'null');if(s){S.pantry=s.pantry||DP;S.meals=s.meals||DM;S.shopExtra=s.shopExtra||[];S.shopChecked=s.shopChecked||[];}else{S.pantry=DP;S.meals=DM;}}catch(e){S.pantry=DP;S.meals=DM;}}
-function save(){localStorage.setItem('kt_v2',JSON.stringify({pantry:S.pantry,meals:S.meals,shopExtra:S.shopExtra,shopChecked:S.shopChecked}));}
-function uid(){return 'i'+Math.random().toString(36).slice(2,8);}
-function inStock(){return S.pantry.filter(i=>i.inStock).map(i=>i.name.toLowerCase());}
-function outItems(){return S.pantry.filter(i=>!i.inStock);}
-function canCook(m){const s=inStock();return m.ingredients.every(i=>s.includes(i.toLowerCase()));}
-function missing(m){const s=inStock();return m.ingredients.filter(i=>!s.includes(i.toLowerCase()));}
-function stats(){
-  const ic=S.pantry.filter(i=>i.inStock).length,oc=S.pantry.filter(i=>!i.inStock).length,cc=S.meals.filter(canCook).length;
-  document.getElementById('stat-in').textContent=ic;document.getElementById('stat-out').textContent=oc;document.getElementById('stat-cook').textContent=cc;
-  document.getElementById('header-sub').textContent=cc>0?cc+' meal'+(cc===1?'':'s')+' ready to cook tonight':oc>0?oc+' item'+(oc===1?'':'s')+' need restocking':'All stocked up!';
-  const sc=outItems().length+S.shopExtra.filter(e=>!e.checked).length,b=document.getElementById('shop-badge');
-  b.textContent=sc;b.style.display=sc>0?'':'none';
+// ── STATE ──────────────────────────────────────
+const SK='meals_v1';
+let S={
+  meals:[],    // {id,name,ingredientIds:[],ratings:[{eaterId,score,date}]}
+  pantry:[],   // {id,name,category:'fridge'|'freezer'|'pantry',inStock:bool}
+  eaters:[],   // {id,name,relation}
+  extras:[],   // {id,name,checked:bool}
+  shopDone:[], // ingredientIds bought (checked off in shop = back in stock)
+  expanded:null
+};
+
+let tIngSel=[];
+let tCat=null;
+let tPending='';
+let tCookId=null;
+let tCookChk={};
+let tRateId=null;
+let tRatings={};
+
+// ── PERSIST ────────────────────────────────────
+function save(){try{localStorage.setItem(SK,JSON.stringify(S))}catch(e){}}
+function load(){try{const d=localStorage.getItem(SK);if(d)S={...S,...JSON.parse(d)}}catch(e){}}
+function uid(){return Math.random().toString(36).slice(2)+Date.now().toString(36)}
+
+// ── NAV ────────────────────────────────────────
+let cur='cook';
+function showSection(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const sec=document.getElementById('s-'+name);
+  if(sec) sec.classList.add('active');
+  const tab=document.querySelector('.tab[data-s="'+name+'"]');
+  if(tab) tab.classList.add('active');
+  cur=name;
+  document.getElementById('fab').style.display=name==='cook'?'none':'flex';
+  renderAll();
 }
-function catFilters(){
-  const cats=[...new Set(S.pantry.map(i=>i.category))].sort(),row=document.getElementById('cat-filters');row.innerHTML='';
-  ['All',...cats].forEach(c=>{const b=document.createElement('button');b.className='filter-chip'+(S.catFilter===c?' active':'');b.textContent=c==='All'?'All':(CE[c]||'')+' '+c;b.onclick=()=>{S.catFilter=c;renderPantry();};row.appendChild(b);});
+
+function handleFab(){
+  if(cur==='meals') openMealModal();
+  else if(cur==='pantry') openIngModal();
+  else if(cur==='shop') openModal('shop-extra-modal');
 }
-function renderPantry(){
-  catFilters();const list=document.getElementById('pantry-list');list.innerHTML='';
-  const fil=S.catFilter==='All'?S.pantry:S.pantry.filter(i=>i.category===S.catFilter);
-  const grp={};CATS.forEach(c=>grp[c]=[]);fil.forEach(item=>{(grp[item.category]=grp[item.category]||[]).push(item);});
-  Object.entries(grp).forEach(([cat,items])=>{
-    if(!items.length)return;
-    const lbl=document.createElement('div');lbl.className='section-label';lbl.innerHTML=(CE[cat]||'')+' '+cat;list.appendChild(lbl);
-    const grid=document.createElement('div');grid.className='items-grid';
-    items.forEach(item=>{const card=document.createElement('div');card.className='item-card '+(item.inStock?'in':'out');card.innerHTML='<div class="item-dot"></div><span class="item-name">'+item.name+'</span><button class="item-del" onclick="event.stopPropagation();delItem(\''+item.id+'\')">&#10005;</button>';card.onclick=()=>toggleItem(item.id);grid.appendChild(card);});
-    list.appendChild(grid);
-  });stats();
+
+// ── MODALS ─────────────────────────────────────
+function openModal(id){
+  const m=document.getElementById(id);
+  m.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>m.classList.add('open')));
 }
-function toggleItem(id){const item=S.pantry.find(i=>i.id===id);if(!item)return;item.inStock=!item.inStock;save();renderPantry();renderShop();renderTonight();if(!item.inStock)toast('Added "'+item.name+'" to shopping list');}
-function addPantryItem(){const n=document.getElementById('new-item-name'),c=document.getElementById('new-item-cat'),name=n.value.trim();if(!name)return;if(S.pantry.find(i=>i.name.toLowerCase()===name.toLowerCase())){toast('Already in pantry!');return;}S.pantry.push({id:uid(),name,category:c.value,inStock:true});n.value='';save();renderPantry();datalist();toast('"'+name+'" added');}
-function delItem(id){const item=S.pantry.find(i=>i.id===id);S.pantry=S.pantry.filter(i=>i.id!==id);save();renderPantry();renderShop();renderTonight();if(item)toast('"'+item.name+'" removed');}
-function renderShop(){
-  const out=outItems(),as=document.getElementById('shop-auto-section'),ms=document.getElementById('shop-manual-section');as.innerHTML='';ms.innerHTML='';
-  if(!out.length&&!S.shopExtra.length){as.innerHTML='<div class="empty-shop"><div class="empty-shop-icon">&#9989;</div><p>Nothing needed — all stocked up!</p></div>';return;}
-  if(out.length){const l=document.createElement('div');l.className='section-label';l.textContent='&#128;&#155; Out of stock';as.appendChild(l);out.forEach(item=>{const chk=S.shopChecked.includes(item.id),d=document.createElement('div');d.className='shop-item auto'+(chk?' checked':'');d.innerHTML='<div class="shop-check" onclick="chkShop(\''+item.id+'\',\'auto\')"></div><div class="shop-item-info"><div class="shop-item-name">'+item.name+'</div><div class="shop-item-tag">'+(CE[item.category]||'')+' '+item.category+'</div></div><button class="shop-del" onclick="markBack(\''+item.id+'\')">&#10003; Got it</button>';as.appendChild(d);});}
-  if(S.shopExtra.length){const l=document.createElement('div');l.className='section-label';l.textContent='&#128; Added manually';ms.appendChild(l);S.shopExtra.forEach(item=>{const d=document.createElement('div');d.className='shop-item manual'+(item.checked?' checked':'');d.innerHTML='<div class="shop-check" onclick="chkShop(\''+item.id+'\',\'manual\')"></div><div class="shop-item-info"><div class="shop-item-name">'+item.name+'</div></div><button class="shop-del" onclick="delShop(\''+item.id+'\')">&#10005;</button>';ms.appendChild(d);});}
-  stats();
+function closeModal(id){
+  const m=document.getElementById(id);
+  m.classList.remove('open');
+  setTimeout(()=>{m.style.display='none'},300);
 }
-function chkShop(id,type){if(type==='auto'){const i=S.shopChecked.indexOf(id);if(i>=0)S.shopChecked.splice(i,1);else S.shopChecked.push(id);}else{const item=S.shopExtra.find(i=>i.id===id);if(item)item.checked=!item.checked;}save();renderShop();}
-function markBack(id){const item=S.pantry.find(i=>i.id===id);if(item){item.inStock=true;S.shopChecked=S.shopChecked.filter(c=>c!==id);}save();renderPantry();renderShop();renderTonight();if(item)toast('"'+item.name+'" back in stock');}
-function addShopItem(){const input=document.getElementById('new-shop-item'),name=input.value.trim();if(!name)return;S.shopExtra.push({id:uid(),name,checked:false});input.value='';save();renderShop();stats();}
-function delShop(id){S.shopExtra=S.shopExtra.filter(i=>i.id!==id);save();renderShop();stats();}
-function copyShopList(){const lines=[];outItems().filter(i=>!S.shopChecked.includes(i.id)).forEach(i=>lines.push('- '+i.name));S.shopExtra.filter(i=>!i.checked).forEach(i=>lines.push('- '+i.name));if(!lines.length){toast('Nothing to copy!');return;}navigator.clipboard.writeText('Walmart Order - '+new Date().toLocaleDateString()+'\n\n'+lines.join('\n')).then(()=>toast('Copied! Paste into Walmart app')).catch(()=>toast('Copy failed - try again'));}
+function backdropClose(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+
+// ── MEAL MODAL ─────────────────────────────────
+function openMealModal(mealId=null){
+  document.getElementById('meal-edit-id').value=mealId||'';
+  if(mealId){
+    const m=S.meals.find(x=>x.id===mealId);
+    document.getElementById('meal-modal-title').textContent='Edit Meal';
+    document.getElementById('meal-name-inp').value=m.name;
+    tIngSel=[...m.ingredientIds];
+  } else {
+    document.getElementById('meal-modal-title').textContent='New Meal';
+    document.getElementById('meal-name-inp').value='';
+    tIngSel=[];
+  }
+  document.getElementById('ing-search-inp').value='';
+  renderSelIngs();renderIngSearch();
+  openModal('meal-modal');
+}
+
+function renderSelIngs(){
+  document.getElementById('sel-ings').innerHTML=tIngSel.map(id=>{
+    const ing=S.pantry.find(p=>p.id===id);
+    if(!ing) return '';
+    return `<div class="sel-ing"><span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span><span class="sel-ing-name">${ing.name}</span><button class="rm-ing" onclick="rmIngSel('${id}')">✕</button></div>`;
+  }).join('');
+}
+
+function rmIngSel(id){tIngSel=tIngSel.filter(i=>i!==id);renderSelIngs();renderIngSearch()}
+
+function renderIngSearch(){
+  const q=document.getElementById('ing-search-inp').value.toLowerCase().trim();
+  const avail=S.pantry.filter(p=>!tIngSel.includes(p.id));
+  const filtered=q?avail.filter(p=>p.name.toLowerCase().includes(q)):avail;
+  let html=filtered.slice(0,6).map(ing=>
+    `<div class="ing-res-item" onclick="addIngToSel('${ing.id}')"><span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span>${ing.name}</div>`
+  ).join('');
+  const raw=document.getElementById('ing-search-inp').value.trim();
+  if(raw&&!S.pantry.find(p=>p.name.toLowerCase()===raw.toLowerCase())){
+    html+=`<div class="ing-res-item create" onclick="openNewIngFromMeal()">+ Create "${raw}"</div>`;
+  }
+  document.getElementById('ing-search-res').innerHTML=html;
+}
+
+function addIngToSel(id){
+  if(!tIngSel.includes(id)) tIngSel.push(id);
+  document.getElementById('ing-search-inp').value='';
+  renderSelIngs();renderIngSearch();
+}
+
+function openNewIngFromMeal(){
+  tPending=document.getElementById('ing-search-inp').value.trim();
+  document.getElementById('new-ing-name').value=tPending;
+  tCat=null;
+  document.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('sel'));
+  openModal('ing-modal');
+}
+
+function saveMeal(){
+  const name=document.getElementById('meal-name-inp').value.trim();
+  if(!name){showToast('Enter a meal name');return}
+  if(tIngSel.length===0){showToast('Add at least one ingredient');return}
+  const editId=document.getElementById('meal-edit-id').value;
+  if(editId){
+    const m=S.meals.find(x=>x.id===editId);
+    m.name=name;m.ingredientIds=[...tIngSel];
+  } else {
+    S.meals.push({id:uid(),name,ingredientIds:[...tIngSel],ratings:[]});
+  }
+  save();closeModal('meal-modal');renderAll();
+  showToast(editId?'Meal updated!':'Meal added!');
+}
+
+function deleteMeal(id){
+  if(!confirm('Delete this meal?')) return;
+  S.meals=S.meals.filter(m=>m.id!==id);
+  if(S.expanded===id) S.expanded=null;
+  save();renderAll();showToast('Meal deleted');
+}
+
+// ── INGREDIENT MODAL ───────────────────────────
+function openIngModal(){
+  tPending='';
+  document.getElementById('new-ing-name').value='';
+  tCat=null;
+  document.querySelectorAll('.cat-opt').forEach(b=>b.classList.remove('sel'));
+  openModal('ing-modal');
+}
+
+function selCat(cat){
+  tCat=cat;
+  document.querySelectorAll('.cat-opt').forEach(b=>b.classList.toggle('sel',b.dataset.cat===cat));
+}
+
+function saveIngredient(){
+  const name=document.getElementById('new-ing-name').value.trim();
+  if(!name){showToast('Enter an ingredient name');return}
+  if(!tCat){showToast('Select where it is stored');return}
+  const existing=S.pantry.find(p=>p.name.toLowerCase()===name.toLowerCase());
+  if(existing){
+    if(tPending){addIngToSel(existing.id);tPending='';closeModal('ing-modal');return}
+    showToast('"'+name+'" is already in your pantry');return;
+  }
+  const ing={id:uid(),name,category:tCat,inStock:true};
+  S.pantry.push(ing);save();
+  if(tPending){
+    addIngToSel(ing.id);tPending='';closeModal('ing-modal');
+    document.getElementById('ing-search-inp').value='';
+    renderSelIngs();renderIngSearch();
+  } else {
+    closeModal('ing-modal');renderAll();showToast(name+' added to pantry');
+  }
+}
+
+function toggleStock(id){
+  const ing=S.pantry.find(p=>p.id===id);
+  if(!ing) return;
+  ing.inStock=!ing.inStock;
+  if(ing.inStock){S.shopDone=S.shopDone.filter(x=>x!==id)}
+  save();renderAll();
+}
+
+function deleteIng(id){
+  if(!confirm('Remove this ingredient from all meals too?')) return;
+  S.pantry=S.pantry.filter(p=>p.id!==id);
+  S.meals.forEach(m=>{m.ingredientIds=m.ingredientIds.filter(i=>i!==id)});
+  S.shopDone=S.shopDone.filter(x=>x!==id);
+  save();renderAll();
+}
+
+// ── COOK MODAL ────────────────────────────────
+function openCookModal(mealId){
+  const meal=S.meals.find(m=>m.id===mealId);
+  if(!meal) return;
+  tCookId=mealId;tCookChk={};
+  meal.ingredientIds.forEach(id=>{
+    const ing=S.pantry.find(p=>p.id===id);
+    if(ing&&ing.inStock) tCookChk[id]=true;
+  });
+  document.getElementById('cook-modal-title').textContent='Cook It — '+meal.name;
+  renderCookList();openModal('cook-modal');
+}
+
+function renderCookList(){
+  const meal=S.meals.find(m=>m.id===tCookId);
+  if(!meal) return;
+  const html=meal.ingredientIds.map(id=>{
+    const ing=S.pantry.find(p=>p.id===id);
+    if(!ing) return '';
+    if(!ing.inStock){
+      return `<div class="cook-item" style="opacity:.5">
+        <div class="cook-cb" style="border-color:var(--red)">!</div>
+        <div class="cook-item-info"><div class="cook-item-name">${ing.name}</div><div class="cook-item-sub already-out">Already out of stock</div></div>
+        <span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span>
+      </div>`;
+    }
+    const chk=tCookChk[id]||false;
+    return `<div class="cook-item" onclick="togCookChk('${id}')">
+      <div class="cook-cb${chk?' chk':''}">${chk?'✓':''}</div>
+      <div class="cook-item-info">
+        <div class="cook-item-name">${ing.name}</div>
+        <div class="cook-item-sub">${chk?'Will use up':'Still have some — uncheck'}</div>
+      </div>
+      <span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('cook-ing-list').innerHTML=html;
+  const n=Object.values(tCookChk).filter(Boolean).length;
+  document.getElementById('cook-done-btn').textContent=n>0?`Done — mark ${n} as used up`:'Done Cooking';
+}
+
+function togCookChk(id){tCookChk[id]=!tCookChk[id];renderCookList()}
+
+function finishCooking(){
+  const used=Object.entries(tCookChk).filter(([,v])=>v).map(([k])=>k);
+  used.forEach(id=>{const ing=S.pantry.find(p=>p.id===id);if(ing)ing.inStock=false});
+  S.shopDone=S.shopDone.filter(id=>!used.includes(id));
+  save();closeModal('cook-modal');renderAll();
+  showToast(used.length>0?used.length+' items added to shopping list':'Meal cooked!');
+  if(S.eaters.length>0) setTimeout(()=>openRateModal(tCookId),400);
+}
+
+// ── RATE MODAL ────────────────────────────────
+function openRateModal(mealId){
+  const meal=S.meals.find(m=>m.id===mealId);
+  if(!meal) return;
+  tRateId=mealId;tRatings={};
+  S.eaters.forEach(e=>{
+    const ex=meal.ratings.find(r=>r.eaterId===e.id);
+    tRatings[e.id]=ex?ex.score:7;
+  });
+  document.getElementById('rate-modal-title').textContent='Rate — '+meal.name;
+  document.getElementById('rate-eaters').innerHTML=S.eaters.map(e=>`
+    <div class="er-block">
+      <div class="er-top">
+        <div><div class="er-name">${e.name}</div><div class="er-rel">${e.relation}</div></div>
+        <div class="er-score" id="rscore-${e.id}">${tRatings[e.id]}</div>
+      </div>
+      <input type="range" class="r-slider" min="0" max="10" value="${tRatings[e.id]}" oninput="updRating('${e.id}',this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--g400);margin-top:2px"><span>0 Nope</span><span>5 OK</span><span>10 Love it</span></div>
+    </div>`).join('');
+  openModal('rate-modal');
+}
+
+function updRating(eid,val){tRatings[eid]=parseInt(val);document.getElementById('rscore-'+eid).textContent=val}
+
+function saveRatings(){
+  const meal=S.meals.find(m=>m.id===tRateId);
+  if(!meal) return;
+  Object.entries(tRatings).forEach(([eid,score])=>{
+    const idx=meal.ratings.findIndex(r=>r.eaterId===eid);
+    if(idx>=0) meal.ratings[idx]={eaterId:eid,score,date:Date.now()};
+    else meal.ratings.push({eaterId:eid,score,date:Date.now()});
+  });
+  save();closeModal('rate-modal');renderAll();showToast('Ratings saved!');
+}
+
+// ── FAMILY MODAL ──────────────────────────────
+function openFamilyModal(){
+  document.getElementById('eater-name-inp').value='';
+  document.getElementById('eater-rel-inp').value='';
+  renderFamilyModal();openModal('family-modal');
+}
+
+function renderFamilyModal(){
+  const fl=document.getElementById('family-list');
+  if(!S.eaters.length){
+    fl.innerHTML='<div class="empty" style="padding:20px 0"><div class="empty-icon">👨‍👩‍👧</div><div class="empty-title">No family members yet</div></div>';
+  } else {
+    fl.innerHTML='<div class="card" style="margin:0 0 8px">'+S.eaters.map(e=>`
+      <div class="eater-row">
+        <div class="eater-avatar">${e.name[0].toUpperCase()}</div>
+        <div class="eater-info"><div class="eater-name-txt">${e.name}</div><div class="eater-rel-txt">${e.relation}</div></div>
+        <button class="del-btn" onclick="deleteEater('${e.id}')">Remove</button>
+      </div>`).join('')+'</div>';
+  }
+  const fr=document.getElementById('family-ratings');
+  const rated=S.meals.filter(m=>m.ratings.length>0);
+  if(S.eaters.length&&rated.length){
+    let html='<div style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.6px;padding:16px 0 8px">Ratings Summary</div>';
+    S.eaters.forEach(e=>{
+      const rs=S.meals.map(m=>({meal:m,r:m.ratings.find(x=>x.eaterId===e.id)})).filter(x=>x.r).sort((a,b)=>b.r.score-a.r.score);
+      if(!rs.length) return;
+      html+=`<div style="margin-bottom:14px"><div style="font-weight:600;font-size:14px;margin-bottom:6px">${e.name}</div>`;
+      html+=rs.map(x=>`<div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0"><span style="color:var(--g800)">${x.meal.name}</span><span style="font-weight:700;color:${x.r.score>=7?'var(--green)':x.r.score>=4?'var(--amber)':'var(--red)'}">${x.r.score}/10</span></div>`).join('');
+      html+='</div>';
+    });
+    fr.innerHTML=html;
+  } else {fr.innerHTML=''}
+}
+
+function saveEater(){
+  const name=document.getElementById('eater-name-inp').value.trim();
+  if(!name){showToast('Enter a name');return}
+  const rel=document.getElementById('eater-rel-inp').value.trim()||'Family';
+  S.eaters.push({id:uid(),name,relation:rel});
+  document.getElementById('eater-name-inp').value='';
+  document.getElementById('eater-rel-inp').value='';
+  save();renderFamilyModal();renderAll();showToast(name+' added!');
+}
+
+function deleteEater(id){
+  if(!confirm('Remove this family member?')) return;
+  S.eaters=S.eaters.filter(e=>e.id!==id);
+  S.meals.forEach(m=>{m.ratings=m.ratings.filter(r=>r.eaterId!==id)});
+  save();renderFamilyModal();renderAll();
+}
+
+// ── SHOP ──────────────────────────────────────
+function saveShopExtra(){
+  const name=document.getElementById('shop-extra-inp').value.trim();
+  if(!name){showToast('Enter an item');return}
+  S.extras.push({id:uid(),name,checked:false});
+  document.getElementById('shop-extra-inp').value='';
+  save();closeModal('shop-extra-modal');renderShop();showToast('Added to list!');
+}
+
+function toggleShopIng(id){
+  // Tap = bought it = back in stock
+  const idx=S.shopDone.indexOf(id);
+  const ing=S.pantry.find(p=>p.id===id);
+  if(idx>=0){
+    S.shopDone.splice(idx,1);
+    if(ing) ing.inStock=false; // undo
+  } else {
+    S.shopDone.push(id);
+    if(ing) ing.inStock=true;  // bought! restocked
+  }
+  save();renderAll();
+}
+
+function toggleShopExtra(id){
+  const e=S.extras.find(x=>x.id===id);
+  if(e){e.checked=!e.checked;save();renderShop()}
+}
+
+function clearShopDone(){
+  S.extras=S.extras.filter(e=>!e.checked);
+  S.shopDone=[];
+  save();renderAll();showToast('Shopping list cleared!');
+}
+
+// ── DERIVED ───────────────────────────────────
+function readiness(mealId){
+  const m=S.meals.find(x=>x.id===mealId);
+  if(!m) return{status:'not-ready',missing:[],total:0};
+  const missing=m.ingredientIds.filter(id=>{const p=S.pantry.find(x=>x.id===id);return!p||!p.inStock});
+  const status=missing.length===0?'ready':missing.length<=2?'almost':'not-ready';
+  return{status,missing,total:m.ingredientIds.length};
+}
+
+function avgRating(mealId){
+  const m=S.meals.find(x=>x.id===mealId);
+  if(!m||!m.ratings.length) return null;
+  return(m.ratings.reduce((a,r)=>a+r.score,0)/m.ratings.length).toFixed(1);
+}
+
+function ingMeals(ingId){return S.meals.filter(m=>m.ingredientIds.includes(ingId))}
+function catIcon(c){return{fridge:'🧊',freezer:'❄️',pantry:'🥫'}[c]||c}
+function catCls(c){return{fridge:'cat-fridge',freezer:'cat-freezer',pantry:'cat-pantry-tag'}[c]||''}
+function rLabel(r){return r.status==='ready'?'Ready':`Missing ${r.missing.length}`}
+
+// ── RENDER ────────────────────────────────────
+function renderCook(){
+  const el=document.getElementById('cook-list');
+  if(!S.meals.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🍽️</div><div class="empty-title">No meals yet</div><div class="empty-text">Go to the Meals tab and tap + to add your go-to recipes.</div></div>';
+    document.getElementById('ready-pill').textContent='0 ready';return;
+  }
+  const sorted=[...S.meals].sort((a,b)=>{
+    const o={ready:0,almost:1,'not-ready':2};
+    return o[readiness(a.id).status]-o[readiness(b.id).status];
+  });
+  const readyN=sorted.filter(m=>readiness(m.id).status==='ready').length;
+  document.getElementById('ready-pill').textContent=readyN+' ready';
+  el.innerHTML=sorted.map(meal=>{
+    const r=readiness(meal.id);const avg=avgRating(meal.id);const exp=S.expanded===meal.id;
+    let detail='';
+    if(exp){
+      const ings=meal.ingredientIds.map(id=>{
+        const ing=S.pantry.find(p=>p.id===id);if(!ing) return '';
+        return `<div class="ing-row ${ing.inStock?'in-s':'out-s'}"><div class="ing-dot"></div><span class="ing-row-name">${ing.name}</span><span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span></div>`;
+      }).join('');
+      const ratHtml=meal.ratings.length?`<div class="ratings-wrap">${meal.ratings.map(rt=>{const e=S.eaters.find(x=>x.id===rt.eaterId);return e?`<div class="r-chip"><span class="r-chip-name">${e.name}</span><span class="r-chip-score">${rt.score}/10</span></div>`:''}).join('')}</div>`:'';
+      detail=`<div class="meal-detail">
+        <div class="meal-detail-btns">
+          <button class="btn btn-primary" style="flex:1" onclick="event.stopPropagation();openCookModal('${meal.id}')">🍳 Cook It!</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openMealModal('${meal.id}')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deleteMeal('${meal.id}')">Delete</button>
+        </div>
+        <div class="ing-list">${ings}</div>${ratHtml}
+      </div>`;
+    }
+    return `<div class="meal-card">
+      <div class="meal-card-row" onclick="togExpand('${meal.id}')">
+        <div class="r-dot ${r.status}"></div>
+        <span class="meal-name">${meal.name}</span>
+        ${avg?`<div class="avg-star"><span>★</span>${avg}</div>`:''}
+        <span class="r-badge ${r.status}">${rLabel(r)}</span>
+      </div>${detail}
+    </div>`;
+  }).join('');
+}
+
+function togExpand(id){S.expanded=S.expanded===id?null:id;renderCook()}
+
 function renderMeals(){
-  datalist();const list=document.getElementById('meals-list');list.innerHTML='';
-  if(!S.meals.length){list.innerHTML='<div style="text-align:center;padding:40px 20px;color:#999">No meals yet!</div>';return;}
-  const sorted=[...S.meals].sort((a,b)=>canCook(b)?1:canCook(a)?-1:0);const is=inStock();
-  sorted.forEach(m=>{const miss=missing(m),can=miss.length===0,card=document.createElement('div');card.className='meal-card';const pills=m.ingredients.map(ing=>'<span class="ing-pill '+(is.includes(ing.toLowerCase())?'ing-have':'ing-miss')+'">'+ing+'</span>').join('');card.innerHTML='<div class="meal-row"><div class="meal-name">'+m.name+'</div><span class="meal-badge '+(can?'badge-green':miss.length<=2?'badge-red':'badge-gray')+'">'+(can?'&#10003; Ready':miss.length+' missing')+'</span></div><div class="meal-ingredients">'+pills+'</div><div class="meal-actions">'+(can?'':'<button class="btn-add-shop" onclick="addMissing(\''+m.id+'\')">+ Add missing to list</button>')+'<button class="btn-del-meal" onclick="delMeal(\''+m.id+'\')">&#10005;</button></div>';list.appendChild(card);});
+  const el=document.getElementById('meals-list');
+  if(!S.meals.length){
+    el.innerHTML='<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No meals added yet</div><div class="empty-text">Tap + to add your go-to meals and their ingredients.</div></div>';return;
+  }
+  el.innerHTML=S.meals.map(meal=>{
+    const r=readiness(meal.id);const avg=avgRating(meal.id);
+    return `<div class="card">
+      <div style="padding:13px 14px;display:flex;align-items:center;gap:10px;cursor:pointer" onclick="openMealModal('${meal.id}')">
+        <div class="r-dot ${r.status}" style="width:10px;height:10px"></div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:600">${meal.name}</div>
+          <div style="font-size:12px;color:var(--g400);margin-top:1px">${meal.ingredientIds.length} ingredients${avg?' · ★ '+avg:''}${meal.ratings.length?' · '+meal.ratings.length+' rating'+(meal.ratings.length!==1?'s':''):''}</div>
+        </div>
+        <span class="r-badge ${r.status}">${rLabel(r)}</span>
+        <span style="color:var(--g400);font-size:18px">›</span>
+      </div>
+    </div>`;
+  }).join('');
 }
-function addMissing(mealId){const m=S.meals.find(x=>x.id===mealId);if(!m)return;const miss=missing(m);miss.forEach(ing=>{const p=S.pantry.find(i=>i.name.toLowerCase()===ing.toLowerCase());if(p)p.inStock=false;else if(!S.shopExtra.find(i=>i.name.toLowerCase()===ing.toLowerCase()))S.shopExtra.push({id:uid(),name:ing,checked:false});});save();renderPantry();renderShop();renderTonight();renderMeals();toast(miss.length+' item'+(miss.length===1?'':'s')+' added to shopping list');}
-function delMeal(id){const m=S.meals.find(x=>x.id===id);S.meals=S.meals.filter(x=>x.id!==id);save();renderMeals();renderTonight();stats();if(m)toast('"'+m.name+'" removed');}
-function toggleAddMealForm(){const f=document.getElementById('add-meal-form');f.classList.toggle('visible');if(f.classList.contains('visible')){S.newIngredients=[];document.getElementById('meal-name-input').value='';document.getElementById('ing-input').value='';renderTags();document.getElementById('meal-name-input').focus();}}
-function renderTags(){document.getElementById('meal-tags').innerHTML=S.newIngredients.map((ing,i)=>'<span class="tag-pill">'+ing+'<button class="tag-rm" onclick="rmTag('+i+')">&#10005;</button></span>').join('');}
-function rmTag(i){S.newIngredients.splice(i,1);renderTags();}
-function addIngredientTag(){const input=document.getElementById('ing-input'),val=input.value.trim();if(!val)return;if(!S.newIngredients.includes(val))S.newIngredients.push(val);input.value='';renderTags();input.focus();}
-function saveMeal(){const name=document.getElementById('meal-name-input').value.trim();if(!name){toast('Enter a meal name');return;}if(!S.newIngredients.length){toast('Add at least one ingredient');return;}S.meals.push({id:uid(),name,ingredients:[...S.newIngredients]});save();toggleAddMealForm();renderMeals();renderTonight();stats();toast('"'+name+'" added!');}
-function datalist(){document.getElementById('pantry-suggestions').innerHTML=S.pantry.map(i=>'<option value="'+i.name+'">').join('');}
-function renderTonight(){
-  const list=document.getElementById('tonight-list');list.innerHTML='';
-  const cookable=S.meals.filter(canCook),almost=S.meals.filter(m=>!canCook(m)&&missing(m).length<=2);
-  document.getElementById('tonight-sub').textContent=cookable.length>0?cookable.length+' meal'+(cookable.length===1?'':'s')+' you can make right now':'Stock up a few items and you\'ll be set!';
-  if(!cookable.length&&!almost.length){list.innerHTML='<div class="empty-tonight"><div class="empty-tonight-icon">&#127829;</div><p style="font-size:16px;font-weight:600;margin-bottom:8px;color:#444">Looks like frozen pizza night</p><p style="font-size:14px">Mark items as in-stock or add meals to see what you can cook.</p></div>';return;}
-  if(cookable.length){const l=document.createElement('div');l.className='section-label';l.textContent='Ready to cook';list.appendChild(l);cookable.forEach(m=>{const card=document.createElement('div');card.className='suggest-card';card.innerHTML='<div class="suggest-info"><div class="suggest-name">'+m.name+'</div><div class="suggest-sub">'+m.ingredients.length+' ingredients - all in stock</div></div><button class="btn-cook" onclick="cookMeal(\''+m.id+'\')">Cook it!</button>';list.appendChild(card);});}
-  if(almost.length){const l=document.createElement('div');l.className='section-label';l.textContent='Almost there (1-2 missing)';list.appendChild(l);almost.forEach(m=>{const miss=missing(m),card=document.createElement('div');card.className='almost-card';card.innerHTML='<div class="almost-top"><div class="almost-name">'+m.name+'</div><button class="btn-add-missing" onclick="addMissing(\''+m.id+'\')">+ Add to list</button></div><div class="almost-missing">Missing: '+miss.join(', ')+'</div>';list.appendChild(card);});}
+
+let pantryFilter='all';
+function setPantryFilter(cat){
+  pantryFilter=cat;
+  document.querySelectorAll('#pantry-filters .fchip').forEach(c=>c.classList.toggle('active',c.dataset.cat===cat));
+  renderPantry();
 }
-function switchTab(name,btn){document.querySelectorAll('.tab-view').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));document.getElementById('tab-'+name).classList.add('active');btn.classList.add('active');if(name==='shop')renderShop();if(name==='meals')renderMeals();if(name==='tonight')renderTonight();}
-let activeMeal=null,usedSet=new Set();
-function cookMeal(mealId){const m=S.meals.find(x=>x.id===mealId);if(!m)return;activeMeal=m;usedSet=new Set(m.ingredients.map(i=>i.toLowerCase()));document.getElementById('cook-modal-title').textContent=m.name;document.getElementById('cook-modal-sub').textContent='Tap to uncheck anything you did not use up.';const list=document.getElementById('cook-ing-list');list.innerHTML='';m.ingredients.forEach(ing=>{const p=S.pantry.find(x=>x.name.toLowerCase()===ing.toLowerCase()),li=document.createElement('li');li.className='cook-ing-item used';li.innerHTML='<div class="cook-ing-cb"></div><span class="cook-ing-name">'+ing+'</span>'+(p?'<span class="cook-ing-status" style="background:#e6f5ec;color:#2a7a52">In stock</span>':'<span class="cook-ing-status" style="background:#fdf0f0;color:#c44">Already out</span>');li.onclick=()=>{const k=ing.toLowerCase();if(usedSet.has(k)){usedSet.delete(k);li.classList.remove('used');}else{usedSet.add(k);li.classList.add('used');}updateDoneBtn();};list.appendChild(li);});updateDoneBtn();document.getElementById('cook-modal-overlay').classList.add('open');}
-function updateDoneBtn(){const btn=document.getElementById('cook-btn-done'),n=usedSet.size;btn.textContent=n>0?'Mark '+n+' ingredient'+(n===1?'':'s')+' as out of stock':'Nothing to mark - close when done';btn.onclick=finishCooking;}
-function finishCooking(){if(!activeMeal)return;let marked=0;usedSet.forEach(k=>{const item=S.pantry.find(p=>p.name.toLowerCase()===k&&p.inStock);if(item){item.inStock=false;marked++;}});save();document.getElementById('cook-modal-overlay').classList.remove('open');renderPantry();renderShop();renderTonight();stats();toast(marked>0?marked+' item'+(marked===1?'':'s')+' added to your shopping list':'Enjoy your '+activeMeal.name+'!');activeMeal=null;}
-function closeCookModal(e){if(e.target===document.getElementById('cook-modal-overlay'))document.getElementById('cook-modal-overlay').classList.remove('open');}
-let tt;function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);}
-document.getElementById('ing-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addIngredientTag();}});
-document.getElementById('new-item-name').addEventListener('keydown',e=>{if(e.key==='Enter')addPantryItem();});
-document.getElementById('new-shop-item').addEventListener('keydown',e=>{if(e.key==='Enter')addShopItem();});
-load();renderPantry();stats();
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{});}
+
+function renderPantry(){
+  const el=document.getElementById('pantry-list');
+  const q=(document.getElementById('pantry-search')||{value:''}).value.toLowerCase();
+  let items=[...S.pantry];
+  if(pantryFilter!=='all') items=items.filter(p=>p.category===pantryFilter);
+  if(q) items=items.filter(p=>p.name.toLowerCase().includes(q));
+  items.sort((a,b)=>a.inStock!==b.inStock?b.inStock-a.inStock:a.name.localeCompare(b.name));
+  if(!items.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🥫</div><div class="empty-title">${S.pantry.length?'No matches':'Pantry is empty'}</div><div class="empty-text">${S.pantry.length?'Try a different search or filter.':'Add meals to populate your pantry automatically.'}</div></div>`;return;
+  }
+  const inStock=items.filter(p=>p.inStock);
+  const outStock=items.filter(p=>!p.inStock);
+  let html='';
+  if(inStock.length){
+    html+=`<div class="slabel">In stock (${inStock.length})</div>`;
+    html+=`<div style="display:flex;flex-direction:column;gap:6px;padding:0 14px 4px">`+inStock.map(pantryRow).join('')+`</div>`;
+  }
+  if(outStock.length){
+    html+=`<div class="slabel">Out of stock (${outStock.length})</div>`;
+    html+=`<div style="display:flex;flex-direction:column;gap:6px;padding:0 14px 8px">`+outStock.map(pantryRow).join('')+`</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function pantryRow(ing){
+  const meals=ingMeals(ing.id);
+  const tags=meals.slice(0,5).map(m=>`<span class="mtag">${m.name}</span>`).join('');
+  const more=meals.length>5?`<span class="mtag" style="background:var(--g100);color:var(--g600)">+${meals.length-5}</span>`:'';
+  return `<div class="card pantry-item${ing.inStock?'':' out-s'}" style="margin:0" onclick="toggleStock('${ing.id}')">
+    <div class="p-toggle ${ing.inStock?'in':'out'}">${ing.inStock?'✓':''}</div>
+    <div class="pantry-info"><div class="pantry-name">${ing.name}</div><div class="meal-tags">${tags}${more}</div></div>
+    <span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span>
+    <button class="del-btn" onclick="event.stopPropagation();deleteIng('${ing.id}')">✕</button>
+  </div>`;
+}
+
+function renderShop(){
+  const el=document.getElementById('shop-list');
+  const outOfStock=S.pantry.filter(p=>!p.inStock);
+  const pendingIngs=outOfStock.filter(p=>!S.shopDone.includes(p.id));
+  const boughtIngs=S.pantry.filter(p=>S.shopDone.includes(p.id));
+  const pendingExtras=S.extras.filter(e=>!e.checked);
+  const doneExtras=S.extras.filter(e=>e.checked);
+  const total=pendingIngs.length+pendingExtras.length;
+  const doneTotal=boughtIngs.length+doneExtras.length;
+  if(!total&&!doneTotal){
+    el.innerHTML='<div class="empty"><div class="empty-icon">🛒</div><div class="empty-title">Shopping list is empty</div><div class="empty-text">Cook a meal to auto-add used-up items, or tap + to add manually.</div></div>';return;
+  }
+  let html='';
+  if(total){
+    html+=`<div class="slabel">Need to buy (${total})</div>`;
+    html+=`<div style="display:flex;flex-direction:column;gap:6px;padding:0 14px 4px">`;
+    html+=pendingIngs.map(ing=>{
+      const ms=ingMeals(ing.id);
+      const forTxt=ms.length?'For: '+ms.map(m=>m.name).join(', '):'';
+      return `<div class="card shop-item" style="margin:0" onclick="toggleShopIng('${ing.id}')">
+        <div class="shop-cb"></div>
+        <div class="shop-info"><div class="shop-name">${ing.name}</div>${forTxt?`<div class="shop-sub">${forTxt}</div>`:''}</div>
+        <span class="cat-tag ${catCls(ing.category)}">${catIcon(ing.category)}</span>
+      </div>`;
+    }).join('');
+    html+=pendingExtras.map(e=>`<div class="card shop-item" style="margin:0" onclick="toggleShopExtra('${e.id}')">
+      <div class="shop-cb"></div>
+      <div class="shop-info"><div class="shop-name">${e.name}</div><div class="shop-sub">Manual add</div></div>
+    </div>`).join('');
+    html+=`</div>`;
+  }
+  if(doneTotal){
+    html+=`<div class="slabel" style="display:flex;justify-content:space-between;align-items:center;padding-right:14px"><span>In cart — back in stock (${doneTotal})</span><button class="shop-clear-btn" onclick="clearShopDone()">Clear</button></div>`;
+    html+=`<div style="display:flex;flex-direction:column;gap:6px;padding:0 14px 8px">`;
+    html+=boughtIngs.map(ing=>`<div class="card shop-item chk" style="margin:0" onclick="toggleShopIng('${ing.id}')">
+      <div class="shop-cb chk">✓</div>
+      <div class="shop-info"><div class="shop-name">${ing.name}</div><div class="shop-sub">Back in stock ✓</div></div>
+    </div>`).join('');
+    html+=doneExtras.map(e=>`<div class="card shop-item chk" style="margin:0" onclick="toggleShopExtra('${e.id}')">
+      <div class="shop-cb chk">✓</div>
+      <div class="shop-info"><div class="shop-name">${e.name}</div></div>
+    </div>`).join('');
+    html+=`</div>`;
+  }
+  el.innerHTML=html;
+}
+
+function renderAll(){renderCook();renderMeals();renderPantry();renderShop()}
+
+// ── TOAST ─────────────────────────────────────
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── SETTINGS ──────────────────────────────────
+function openSettingsModal(){
+  const theme=localStorage.getItem('meals_theme')||'light';
+  document.getElementById('theme-light').classList.toggle('active',theme==='light');
+  document.getElementById('theme-dark').classList.toggle('active',theme==='dark');
+  openModal('settings-modal');
+}
+
+function setTheme(theme){
+  localStorage.setItem('meals_theme',theme);
+  document.documentElement.setAttribute('data-theme',theme);
+  document.getElementById('theme-light').classList.toggle('active',theme==='light');
+  document.getElementById('theme-dark').classList.toggle('active',theme==='dark');
+}
+
+function loadTheme(){
+  const theme=localStorage.getItem('meals_theme')||'light';
+  document.documentElement.setAttribute('data-theme',theme);
+}
+
+function confirmClearData(){
+  if(!confirm('This will permanently delete all your meals, pantry, and ratings. Are you sure?')) return;
+  localStorage.removeItem(SK);
+  S={meals:[],pantry:[],eaters:[],extras:[],shopDone:[],expanded:null};
+  closeModal('settings-modal');renderAll();showToast('App data cleared');
+}
+
+// ── INIT ──────────────────────────────────────
+loadTheme();load();renderAll();showSection('cook');
+
+document.getElementById('meal-name-inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('ing-search-inp').focus()});
+document.getElementById('ing-search-inp').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){const r=document.querySelectorAll('#ing-search-res .ing-res-item:not(.create)');if(r.length===1)r[0].click()}
+});
+document.getElementById('shop-extra-inp').addEventListener('keydown',e=>{if(e.key==='Enter')saveShopExtra()});
+</script>
+
+<script>
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('./sw.js',{scope:'./'})
+      .catch(e=>console.log('SW fail',e));
+  });
+}
 </script>
 </body>
 </html>
